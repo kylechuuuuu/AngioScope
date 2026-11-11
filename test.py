@@ -247,7 +247,8 @@ def test(model=None, compute_metrics=False):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     num_classes = 7
 
-    data_root = 'DSCA_new'
+    data_root = os.environ.get('SD2_DATA_ROOT', 'DSCA_new')
+    split = os.environ.get('SD2_TEST_SPLIT', 'val')
     # Training saves two task-optimal snapshots (_seg / _det); there is no
     # "joint" checkpoint any more, so default to the segmentation one.
     model_path = os.environ.get('SD2_TEST_MODEL', 'best_fusion_model_seg.pth')
@@ -289,7 +290,7 @@ def test(model=None, compute_metrics=False):
         print("Flip TTA enabled (SD2_TTA=1): 4 segmentation forwards per image.")
 
     print("Loading data...")
-    val_dataset = VesselDataset(data_root, split='val')
+    val_dataset = VesselDataset(data_root, split=split)
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=4, persistent_workers=True)
 
     # Segmentation is written/scored only when both a seg branch and GT masks
@@ -356,13 +357,12 @@ def test(model=None, compute_metrics=False):
         if score_seg:
             eval_results = run_eval(
                 pred_dir=dirs['overall'],
-                gt_dir=os.path.join(data_root, 'val', 'masks'),
+                gt_dir=os.path.join(data_root, split, 'masks'),
                 label_path=os.path.join(data_root, 'label.json')
             )
         else:
             print("Segmentation metrics skipped (no masks / detection-only model).")
-        det_results = evaluate_detection(model, data_root=data_root, split='val')
-
+        det_results = evaluate_detection(model, data_root=data_root, split=split)
         if det_results:
             print("\n" + "=" * 80)
             print(f"{'Detection Metric':<40} {'Value':<15}")

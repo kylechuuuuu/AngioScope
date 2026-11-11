@@ -1,10 +1,16 @@
+# PyTorch is installed separately with the CUDA index URL (see README):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# SAM 3.1 vision encoder + HF download helpers
+transformers>=5.0.0
 huggingface_hub
 safetensors
+
+# model / data plumbing
 einops
 timm
 decord
 pycocotools
 ftfy
 regex
-transformers
 gpustat
